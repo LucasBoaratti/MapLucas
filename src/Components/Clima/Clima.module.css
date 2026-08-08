@@ -1,0 +1,49 @@
+.iconeTemperatura {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.informacoesIniciais {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.coordenadas {
+    font-size: 15px;
+}
+
+.tituloDadosClima {
+    font-size: 1.125rem;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.dadosClimaticos {
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.containerBotao {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.botao {
+    background-color: rgb(242, 43, 43);
+    border: none;
+    padding: 7px;
+    color: #fff;
+    border-radius: 15px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transform: scale(1);
+}
+
+.botao:active {
+    transform: scale(0.8);
+    transition: transform 0.2s ease-in;
+}

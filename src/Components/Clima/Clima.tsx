@@ -1,48 +1,87 @@
 import axios from "axios";
+import style from "./Clima.module.css";
 import { useEffect, useState } from "react";
 import type { DadosClima } from "../../Models/Clima.model";
+import type { Coordenadas } from "../../Models/Coordenadas.model";
+import { ClimaDetalhado } from "../Dialog/ClimaDetalhado";
 
-export function Clima() {
-    const [dadosClima, setDadosClima] = useState<DadosClima | null>(null);
-    const apiUrl = "https://api.open-meteo.com/v1/forecast?latitude=-23.514938&longitude=-46.610504&current=temperature_2m,apparent_temperature,relative_humidity_2m,is_day,wind_speed_10m,weather_code&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,sunrise,sunset&timezone=America%2FSao_Paulo";
+export function Clima({ latitude, longitude }: Coordenadas) {
+    const [dadosClima, sepadosClima] = useState<DadosClima | null>(null);
+    const [dialog, setDialog] = useState<boolean>(false);
 
     async function getClima() {
+        const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,is_day,wind_speed_10m,weather_code&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,sunrise,sunset&timezone=America%2FSao_Paulo`;
+
         try {
             const response = await axios.get<DadosClima>(apiUrl);
 
-            setDadosClima(response.data);
+            sepadosClima(response.data);
         }   
         catch(error) {
             console.error("Erro ao buscar dados do clima: ", error);
         }
     }
 
-    // Funções de configurações do clima
-
     // Função de trocar ícone do clima
-    function getWeatherIcon(code: number) {
+    function getIconeClima(code: number) {
         switch (code) {
             case 0: 
-                return "☀️ Céu limpo";
+                return (
+                    <div className={style.iconeTemperatura}>
+                        <p style={{ fontSize: '15px' }}>☀️ {dadosClima?.current.temperature_2m}°C</p>
+                        <p>Ensolarado</p>
+                    </div>
+                );
             case 1:
             case 2:
+                return (
+                    <div className={style.iconeTemperatura}>
+                        <p style={{ fontSize: '15px' }}>⛅ {dadosClima?.current.temperature_2m}°C</p>
+                        <p>Parcialmente nublado</p>
+                    </div>
+                );
             case 3:
-                return "⛅ Parcialmente nublado/Nublado";
+                return (
+                    <div className={style.iconeTemperatura}>
+                        <p style={{ fontSize: '15px' }}>☁️ {dadosClima?.current.temperature_2m}°C</p>
+                        <p>Nublado</p>
+                    </div>
+                );
             case 45:
             case 48:
-                return "🌫️ Névoa";
+                return (
+                    <div className={style.iconeTemperatura}>
+                        <p style={{ fontSize: '15px' }}>🌫️ {dadosClima?.current.temperature_2m}°C</p>
+                        <p>Nevoeiro</p>
+                    </div>
+                );
             case 51:
             case 53:
             case 55:
-                return "🌧️ Garoa";
+                return (
+                    <div className={style.iconeTemperatura}>
+                        <p style={{ fontSize: '15px' }}>🌧️ {dadosClima?.current.temperature_2m}°C</p>
+                        <p>Chuva fraca</p>
+                    </div>
+                );
             case 61:
             case 63:
             case 65:
-                return "🌧️ Chuva";
+                return (
+                    <div className={style.iconeTemperatura}>
+                        <p style={{ fontSize: '15px' }}>🌦️ {dadosClima?.current.temperature_2m}°C</p>
+                        <p>Chuva</p>
+                    </div>
+                );
             case 80:
             case 81:
             case 82:
-                return "🌦️ Pancadas de chuva";
+                return (
+                    <div className={style.iconeTemperatura}>
+                        <p style={{ fontSize: '15px' }}>🌧️ {dadosClima?.current.temperature_2m}°C</p>
+                        <p>Pancadas de chuva</p>
+                    </div>
+                );
             default:
                 return `Código: ${code}`;
         }
@@ -50,63 +89,45 @@ export function Clima() {
 
     useEffect(() => {
         getClima();
-    }, []);
+    }, [latitude, longitude]);
 
     if (!dadosClima) {
         return <p>Carregando dados do clima...</p>;
     }
 
     return (
-        <>
-            <h1>Divisão atual (temporário)</h1>
+        <section>
+            <div className={style.informacoesIniciais}>
+                <h3 className={style.coordenadas}>{dadosClima.latitude.toPrecision(4)}</h3>
+                <h3 className={style.coordenadas}>{dadosClima.longitude.toPrecision(4)}</h3>
+                <p style={{ display: 'flex', fontSize: '15px' }}>{getIconeClima(dadosClima.current.weather_code)}</p>
+            </div>
+            <div className={style.dadosClimaticos}>
+                <p>Elevação: {dadosClima.elevation}m</p>
+                <p>Sensação térmica: {dadosClima.current.apparent_temperature}°C</p>
+                <p>Umidade: {dadosClima.current.relative_humidity_2m}%</p>
+                <p>Tempo atual: {dadosClima.current.is_day ? "Dia" : "Noite"}</p>
+                <p>Velocidade do vento: {dadosClima.current.wind_speed_10m}km/h</p>
+                <div className={style.containerBotao}>
+                    <button className={style.botao} type="button" onClick={() => setDialog(true)}>Ver mais informações</button>
+                </div>
+            </div>
+            <ClimaDetalhado latitude={dadosClima.latitude} longitude={dadosClima.longitude} open={dialog} close={() => setDialog(false)} />
+                    
+                        
+                        
 
-            <h2>Dados individuais</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Latitude</th>
-                        <th>Longitude</th>
-                        <th>Elevação</th>
-                        <th>Temperatura atual</th>
-                        <th>Sensação térmica</th>
-                        <th>Umidade</th>
-                        <th>Tempo atual</th>
-                        <th>Velocidade do vento</th>
-                        <th>Ícone</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{dadosClima.latitude.toPrecision(8)}</td>
-                        <td>{dadosClima.longitude.toPrecision(8)}</td>
-                        <td>{dadosClima.elevation}m</td>
-                        <td>{dadosClima.current.temperature_2m}°C</td>
-                        <td>{dadosClima.current.apparent_temperature}°C</td>
-                        <td>{dadosClima.current.relative_humidity_2m}%</td>
-                        <td>{dadosClima.current.is_day ? "Dia" : "Noite"}</td>
-                        <td>{dadosClima.current.wind_speed_10m}km/h</td>
-                        <td>{getWeatherIcon(dadosClima.current.weather_code)}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h2>Dados de clima</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data/hora</th>
-                        <th>Temperatura</th>
-                    </tr>
-                </thead>
-                <tbody>
+            {/* <h2>Dados de clima</h2>
+                    
+                        <p>Data/hora</p>
+                        <p>Temperatura</p>
+                    
                     {dadosClima.hourly.time.map((time, index) => (
-                        <tr key={time}>
-                            <td>{time}</td>
-                            <td>{dadosClima.hourly.temperature_2m[index]}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </>
+                        <div key={time}>
+                            <p>{time}</p>
+                            <p>{dadosClima.hourly.temperature_2m[index]}</p>
+                        </div>
+                    ))} */}
+        </section>
     );
 }

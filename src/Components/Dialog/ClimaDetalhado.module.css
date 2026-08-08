@@ -1,0 +1,16 @@
+.containerDialog {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1.25rem;
+    border-radius: 25px;
+    border: none;
+    max-width: 31.25rem;
+    width: 60%;
+}
+
+dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
